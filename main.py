@@ -7,6 +7,16 @@ from selenium_stealth import stealth
 import requests
 import time
 
+lowFloats = {}
+
+lowFloats["Fracture"] = ["Galil AR | Connexion", "MP5-SD | Kitbash", "Tec-9 | Brother", "MAG-7 | Monster Call", "MAC-10 | Allure"] # 0,1999
+lowFloats["Kilowatt"] = ["Sawed-Off | Analog Input", "M4A4 | Etch Lord", "MP7 | Just Smile", "Five-SeveN | Hybrid"] # 0,1000
+lowFloats["Revolution"] = ["P2000 | Wicked Sick", "UMP-45 | Wild Child"] # 0.1875
+lowFloats["Prisma"] = ["XM1014 | Incinegator"] # 0.1875
+lowFloats["Glove"] = ["G3SG1 | Stinger", "Nova | Gila"] # 0.0933
+
+
+
 def main():
     driver = start()
 
@@ -124,25 +134,29 @@ def checkPrice(driver, first_scan=False):
         name = name_element.text
         float_value = float(float_element.text.replace("Float", "").strip())
 
-        # Determine item condition based on float value
-        if float_value <= 0.07:
-            name += " (Factory New)"
-        elif float_value <= 0.15:
-            name += " (Minimal Wear)"
-        elif float_value <= 0.38:
-            name += " (Field-Tested)"
-        elif float_value <= 0.45:
-            name += " (Well-Worn)"
-        else:
-            name += " (Battle-Scarred)"
+
 
         if first_scan:
             print("Name:", name)
             print("Float Value:", float_value)
             print("Price:", price)
 
+
+        namecheck = name
+            # Determine item condition based on float value
+        if float_value <= 0.07:
+            namecheck += " (Factory New)"
+        elif float_value <= 0.15:
+            namecheck += " (Minimal Wear)"
+        elif float_value <= 0.38:
+            namecheck += " (Field-Tested)"
+        elif float_value <= 0.45:
+            namecheck += " (Well-Worn)"
+        else:
+            namecheck += " (Battle-Scarred)"
+
         # Retrieve price data from external API
-        response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name={name}")
+        response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name={namecheck}")
         data = response.json()
 
         if data.get("data"):
