@@ -10,7 +10,7 @@ import tim
 def main():
     driver = start()
 
-    time.sleep(50)
+    time.sleep(30)
 
     # Initial element retrieval
     item = WebDriverWait(driver, 10).until(
@@ -165,21 +165,20 @@ def checkPrice(driver, first_scan=False):
 
 
 
-    # Check if the data['data'] list is not empty
-    if 
-        value =
+    value = 1
 
-        # Make a request to the ECB API to get the current exchange rate
-        ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
-        ecb_data = ecb_response.json()
 
-        # Convert USD to EUR using the exchange rate from the ECB API
-        value_in_eur = value * ecb_data['rates']['EUR']
+        
+    # Make a request to the ECB API to get the current exchange rate
+    ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+    ecb_data = ecb_response.json()
 
-        print("Price in EUR:", value_in_eur)
-    else:
-        print("No data found in the response.")
-        return 0, item
+    # Convert USD to EUR using the exchange rate from the ECB API
+    value_in_eur = value * ecb_data['rates']['EUR']
+
+    print("Price in EUR:", value_in_eur)
+    
+    print("No data found in the response.")
 
     if (price / value_in_eur) <= 0.70:   
         return 1, item
