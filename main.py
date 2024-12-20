@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium_stealth import stealth
 import requests
 import tim
+import time
 
 def main():
     driver = start()
