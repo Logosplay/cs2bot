@@ -151,13 +151,12 @@ def checkPrice(driver, first_scan=False):
         name = name_element.text
         float_value = float(float_element.text.replace("Float", "").strip())
 
+        StatTrack = 0
 
 
-        if first_scan:
-            print("Name:", name)
-            print("Float Value:", float_value)
-            print("Price:", price)
-
+        if "StatTrak™" in name:
+            name.replace("StatTrak™ ", "")
+            StatTrack = 1
 
         namecheck = name
             # Determine item condition based on float value
@@ -172,30 +171,35 @@ def checkPrice(driver, first_scan=False):
         else:
             namecheck += " (Battle-Scarred)"
 
+        if StatTrack == 1:
+            namecheck = "StatTrak™ " + str({namecheck})
+
         # Retrieve price data from external API
-        response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name={namecheck}")
+        response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name=" + namecheck)
         data = response.json()
 
+        if first_scan:
+            print("Name:", namecheck)
+            print("Float Value:", float_value)
+            print("Price:", price)
 
-        try:
-            if lowFloats[name](float_value):
-                return 1
 
-            if data.get("data"):
-                value = (data["data"][0]["price"]) / 1000
-                ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
-                ecb_data = ecb_response.json()
-                value_in_eur = value * ecb_data["rates"]["EUR"]
-                print("Price in EUR:", value_in_eur)
+     
+        if lowFloats[name](float_value):
+            return 1
 
-                if (price / value_in_eur) <= 0.70:
-                    return 1, item  # Decision to buy
-            else:
-                print("No data found in the response.")
+        if data.get("data"):
+            value = (data["data"][0]["price"]) / 1000
+            ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+            ecb_data = ecb_response.json()
+            value_in_eur = value * ecb_data["rates"]["EUR"]
+            print("Price in EUR:", value_in_eur)
+
+            if (price / value_in_eur) <= 0.70:
+                return 1, item  # Decision to buy
+        else:
+            print("No data found in the response.")
             return 404, item  # No action if conditions aren't met
-
-        except Exception as e:
-            return 0, item
 
     except Exception as e:
         print(f"Error in checkPrice: {e}")
