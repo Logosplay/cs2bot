@@ -7,14 +7,31 @@ from selenium_stealth import stealth
 import requests
 import time
 
-lowFloats = {}
+lowFloats = {
+    #Fracture
+    ("Galil AR | Connexion"): lambda x: 0.15 < x < 0.20,
+    ("MP5-SD | Kitbash"): lambda x: 0.15 < x < 0.20,
+    ("Tec-9 | Brother"): lambda x: 0.15 < x < 0.20,
+    ("MAG-7 | Monster Call"): lambda x: 0.15 < x < 0.20,
+    ("MAC-10 | Allure"): lambda x: 0.15 < x < 0.20,
 
-lowFloats["Fracture"] = ["Galil AR | Connexion", "MP5-SD | Kitbash", "Tec-9 | Brother", "MAG-7 | Monster Call", "MAC-10 | Allure"] # 0,1999
-lowFloats["Kilowatt"] = ["Sawed-Off | Analog Input", "M4A4 | Etch Lord", "MP7 | Just Smile", "Five-SeveN | Hybrid"] # 0,1000
-lowFloats["Revolution"] = ["P2000 | Wicked Sick", "UMP-45 | Wild Child"] # 0.1875
-lowFloats["Prisma"] = ["XM1014 | Incinegator"] # 0.1875
-lowFloats["Glove"] = ["G3SG1 | Stinger", "Nova | Gila"] # 0.0933
+    #Kilowatt
+    ("Sawed-Off | Analog Input"): lambda x: 0.07 < x < 0.10,
+    ("M4A4 | Etch Lord"): lambda x: 0.07 < x < 0.10,
+    ("MP7 | Just Smile"): lambda x: 0.07 < x < 0.10,
+    ("Five-SeveN | Hybrid"): lambda x: 0.07 < x < 0.10,
 
+    #Revolution
+    ("P2000 | Wicked Sick"): lambda x: 0.15 < x < 0.1875,
+    ("UMP-45 | Wild Child"): lambda x: 0.15 < x < 0.1875,
+
+    #Prisma
+    ("XM1014 | Incinegator"): lambda x: 0.15 < x < 0.1875,
+
+    #Glove
+    ("G3SG1 | Stinger"): lambda x: 0.07 < x < 0.0933,
+    ("Nova | Gila"): lambda x: 0.07 < x < 0.0933,
+}
 
 
 def main():
@@ -159,21 +176,30 @@ def checkPrice(driver, first_scan=False):
         response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name={namecheck}")
         data = response.json()
 
-        if data.get("data"):
-            value = (data["data"][0]["price"]) / 1000
-            ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
-            ecb_data = ecb_response.json()
-            value_in_eur = value * ecb_data["rates"]["EUR"]
-            print("Price in EUR:", value_in_eur)
 
-            if (price / value_in_eur) <= 0.70:
-                return 1, item  # Decision to buy
-        else:
-            print("No data found in the response.")
+        try:
+            if lowFloats[name](float_value):
+                return 1
+
+            if data.get("data"):
+                value = (data["data"][0]["price"]) / 1000
+                ecb_response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+                ecb_data = ecb_response.json()
+                value_in_eur = value * ecb_data["rates"]["EUR"]
+                print("Price in EUR:", value_in_eur)
+
+                if (price / value_in_eur) <= 0.70:
+                    return 1, item  # Decision to buy
+            else:
+                print("No data found in the response.")
+            return 404, item  # No action if conditions aren't met
+
+        except Exception as e:
+            return 0, item
+
     except Exception as e:
         print(f"Error in checkPrice: {e}")
         return 0, item  # Default decision if an error occurs
 
-    return 0, item  # No action if conditions aren't met
 
 main()
