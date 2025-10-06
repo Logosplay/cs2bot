@@ -9,28 +9,14 @@ import time
 
 lowFloats = {
     #Fracture
-    ("Galil AR | Connexion"): lambda x: 0.15 < x < 0.20,
-    ("MP5-SD | Kitbash"): lambda x: 0.15 < x < 0.20,
-    ("Tec-9 | Brother"): lambda x: 0.15 < x < 0.20,
-    ("MAG-7 | Monster Call"): lambda x: 0.15 < x < 0.20,
-    ("MAC-10 | Allure"): lambda x: 0.15 < x < 0.20,
 
     #Kilowatt
-    ("Sawed-Off | Analog Input"): lambda x: 0.07 < x < 0.10,
-    ("M4A4 | Etch Lord"): lambda x: 0.07 < x < 0.10,
-    ("MP7 | Just Smile"): lambda x: 0.07 < x < 0.10,
-    ("Five-SeveN | Hybrid"): lambda x: 0.07 < x < 0.10,
 
     #Revolution
-    ("P2000 | Wicked Sick"): lambda x: 0.15 < x < 0.1875,
-    ("UMP-45 | Wild Child"): lambda x: 0.15 < x < 0.1875,
 
     #Prisma
-    ("XM1014 | Incinegator"): lambda x: 0.15 < x < 0.1875,
 
     #Glove
-    ("G3SG1 | Stinger"): lambda x: 0.07 < x < 0.0933,
-    ("Nova | Gila"): lambda x: 0.07 < x < 0.0933,
 }
 
 
@@ -64,7 +50,6 @@ def main():
             auxitem = auxitem2  # Update auxitem to the new value
 
             time.sleep(2)
-            buy, item = checkPrice(driver, first_scan=True)  # Perform your logic
             print("Buy decision:", buy)
             time.sleep(2)
 
@@ -126,67 +111,19 @@ def start():
 
     return driver
 
-def checkPrice(driver, first_scan=False):
     try:
         item = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "ItemCardNewBody_float__mpCp4"))
         )
-
         item.click()
 
-        # Get the item details
-        name_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "ItemTitle_header__7a9e7"))
-        )
-        float_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "(//div[@class='ItemDetails_row__gcoCh'])[1]"))
-        )
-        price_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "ItemDetails_pricePrimary__j0nKS"))
-        )
-
-        # Extract data
-        price = price_element.text.replace("\u00A0", "").replace("\u20AC", "").replace(",", ".").strip()
-        price = float(price)
         name = name_element.text
         float_value = float(float_element.text.replace("Float", "").strip())
 
-        StatTrack = 0
 
-
-        if "StatTrak™" in name:
-            name.replace("StatTrak™ ", "")
-            StatTrack = 1
-
-        namecheck = name
-            # Determine item condition based on float value
-        if float_value <= 0.07:
-            namecheck += " (Factory New)"
-        elif float_value <= 0.15:
-            namecheck += " (Minimal Wear)"
-        elif float_value <= 0.38:
-            namecheck += " (Field-Tested)"
-        elif float_value <= 0.45:
-            namecheck += " (Well-Worn)"
         else:
-            namecheck += " (Battle-Scarred)"
 
-        if StatTrack == 1:
-            namecheck = "StatTrak™ " + str({namecheck})
-
-        # Retrieve price data from external API
-        response = requests.get(f"https://market.csgo.com/api/v2/search-item-by-hash-name?key=51FWBg5cFBCn1xJ5v1yiz8fj9Zysl07&hash_name=" + namecheck)
         data = response.json()
-
-        if first_scan:
-            print("Name:", namecheck)
-            print("Float Value:", float_value)
-            print("Price:", price)
-
-
-     
-        if lowFloats[name](float_value):
-            return 1
 
         if data.get("data"):
             value = (data["data"][0]["price"]) / 1000
@@ -198,12 +135,8 @@ def checkPrice(driver, first_scan=False):
             if (price / value_in_eur) <= 0.70:
                 return 1, item  # Decision to buy
         else:
-            print("No data found in the response.")
-            return 404, item  # No action if conditions aren't met
 
     except Exception as e:
         print(f"Error in checkPrice: {e}")
-        return 0, item  # Default decision if an error occurs
-
 
 main()
